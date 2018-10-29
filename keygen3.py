@@ -22,36 +22,68 @@ Keep all the values d, p, q and phi secret.
 just the exponent.
 * d is known as the secret exponent or decryption exponent.
 5. Add docstrings to the right definitions
-6. Add a main
+6. Try-catch an error if it's not a prime number or int
+7. Add a main
 '''
 
 from random import randrange
 from math import gcd
+import math
 
 
 def print_title():
     '''
-    Prints information about what the program does
+    print title
     '''
     print()
     print('Simple RSA encryption example')
     print('-' * 29)
     print()
 
+def input_primes_and():
+    '''
+    Select two primes and return these in a tuple
+    Check if input is an int and a prime
+    '''
+    while True:
+        try:
+            p = int(input('Select prime p: '))
+        except ValueError:
+            print('This is NOT and INTEGER')
+            continue
+        if p > 1:
+            for i in range(2, p):
+                if (p % i) == 0:
+                    print("This is NOT a PRIME")
+                    break
+            else:
+                break
+        else:
+            break
 
-def input_primes():
-    '''
-    Ask the prime numbers. They must be integer so "int" is needed
-    '''
-    p = int(input('Select prime p: '))
-    q = int(input('Select prime q: '))
+
+    while True:
+        try:
+            q = int(input('Select prime q: '))
+        except ValueError:
+            print('This is NOT and INTEGER')
+            continue
+        if p > 1:
+            for i in range(2, q):
+                if (q % i) == 0:
+                    print("This is NOT a PRIME")
+                    break
+            else:
+                break
+        else:
+            break
     print()
     return (p, q)
 
-
 def calc_modulus(primes):
     '''
-    Calculating the modulus with the given prime numbers
+    calculate modulus n
+    33 is actually the smallest possible value for the modulus n for which the RSA algorithm works.
     '''
     p, q = primes[0], primes[1]
     n = p * q
@@ -61,7 +93,9 @@ def calc_modulus(primes):
 
 def calc_phi(primes):
     '''
-    Calculating phi with the given information
+    Calculating phi with the given prime numbers
+    Forumla: phi = (p-1)*(q-1)
+    returns phi
     '''
     p, q = primes[0], primes[1]
     phi = (p - 1) * (q - 1)
@@ -72,7 +106,9 @@ def calc_phi(primes):
 
 def pick_public_key(phi):
     '''
-    Asking for a public key and checking if it's a gcd
+    Pick a public key e with the use of randrange.
+    The method randrange() returns a randomly selected element from range(start, stop, step).
+    returns e
     '''
     gcd_is_one = False
     while not gcd_is_one:
@@ -87,7 +123,7 @@ def pick_public_key(phi):
 
 def calc_private_key(e, phi, n):
     '''
-    Calculating the public key with the given information
+    Compute d such that ed ≡ 1 (mod phi)
     '''
     for d in range(1, n - 1):
         if (e * d - 1) % phi == 0:
@@ -98,20 +134,30 @@ def calc_private_key(e, phi, n):
     return d
 
 
-def input_message():
+def input_message(n):
     '''
-    Asking for message.
+    Enter a test message m (int type < modulus)
     '''
-    m = int(input('Select message m: '))
+    while True:
+        try:
+            m = int(input('Select message m: '))
+        except ValueError:
+            print('This is NOT and INTEGER')
+            continue
+        if (m >= n):
+            print("m must be less than the modulus")
+            continue
+        else:
+            break
+
     print()
     return m
 
 
 def encrypt_message(e, n, m):
     '''
-    Encrypting the message
+    Encrypt the message m to c
     '''
-    # c = m ** e % n
     c = pow(m, e, n)
     print('Encrypted message c = m ** e % n = {}'.format(c))
     return c
@@ -119,9 +165,8 @@ def encrypt_message(e, n, m):
 
 def decrypt_message(d, n, c):
     '''
-    Decrypting the message
+    Decrypt c to mm
     '''
-    # mm = c ** d % n
     mm = pow(c, d, n)
     print('Decrypted message mm = c ** d % n = {}'.format(mm))
     print()
@@ -130,7 +175,7 @@ def decrypt_message(d, n, c):
 
 def verify_message(m, mm):
     '''
-    checking of the decryption and encryption are the same number
+    Is m == mm ?
     '''
     print('[*] Is m == mm ? ... ', end="")
     msg = 'OK WORKING EXAMPLE' if m == mm else 'NOT OK -- CHECK FOR ANY ERROR'
@@ -140,15 +185,15 @@ def verify_message(m, mm):
 
 def main():
     '''
-    Calling all functions in the right order
+    top level code
     '''
     print_title()
-    my_primes = input_primes()
+    my_primes = input_primes_and()
     n = calc_modulus(my_primes)
     phi = calc_phi(my_primes)
     e = pick_public_key(phi)
     d = calc_private_key(e, phi, n)
-    m = input_message()
+    m = input_message(n)
     c = encrypt_message(e, n, m)
     mm = decrypt_message(d, n, c)
     verify_message(m, mm)
